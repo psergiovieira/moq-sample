@@ -60,11 +60,27 @@ namespace UnitTest
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
+        [ExpectedException(typeof(ArgumentException), "Password is accepting empty password")]
         public void CanCreateUserWithoutSetPassword()
         {
             var user = new User(1, "fulano", "fulano@mail.com");
             var userWasCreated = _service.Create(user, string.Empty, string.Empty, _passwordValidator);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "Password length can be too small")]
+        public void CanCreateUserWithPasswordLengthTooSmall()
+        {
+            var user = new User(1, "fulano", "fulano@mail.com");
+            var userWasCreated = _service.Create(user, "123", "123", _passwordValidator);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "Service is not validating if password and confirm password match")]
+        public void CanCreateUserWithInvalidConfirmationPassword()
+        {
+            var user = new User(1, "fulano", "fulano@mail.com");
+            var userWasCreated = _service.Create(user, "12345678", "12245678", _passwordValidator);
         }
 
         [TestMethod]
