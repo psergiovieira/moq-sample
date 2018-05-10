@@ -4,6 +4,7 @@ using Domain.Interfaces.Validators;
 using Infrastructure.Generics;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
+using System;
 
 namespace Domain.Services
 {
@@ -20,16 +21,22 @@ namespace Domain.Services
 
         public bool Create(User user, string password, string confirmPassword, IPasswordValidator passwordValidator)
         {
+            //TODO verify if user exists on database, email is valid 
             user.CreatePassword(password, confirmPassword, passwordValidator);
             Repository.Create(user);
             return true;
         }
 
-        public User UpdateEmail(User userData)
-        {
-            //Validate user data
+        public User UpdateEmail(User userData, IEmailValidator emailValidator)
+        {               
             var user = GetById(userData.Id);
+            if (user == null)
+                throw new ArgumentException();
+
+            emailValidator.ValidateEmail(userData.Email);
+
             user.Email = userData.Email;
+            Repository.Update(user);
 
             return user;
         }

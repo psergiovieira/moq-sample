@@ -7,7 +7,7 @@ namespace Domain.Interfaces.Services
     {
         User GetById(int id);
         bool Create(User user,string password, string confirmPassword, IPasswordValidator passwordValidator);
-        User UpdateEmail(User userData);
+        User UpdateEmail(User userData, IEmailValidator emailValidator);
         void Delete(int id);
     }
 }

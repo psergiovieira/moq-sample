@@ -20,6 +20,7 @@ namespace UnitTest
         private User _user;
         private const int ID_MAIN_USER = 1;
         private IPasswordValidator _passwordValidator;
+        private IEmailValidator _emailValidator;
 
         [TestInitialize]
         public void Initialize()
@@ -28,6 +29,7 @@ namespace UnitTest
             _unitOfWork = new Mock<IUnitOfWork>();
             _service = new UserService(_repository.Object, _unitOfWork.Object);
             _passwordValidator = new PasswordValidator();
+            _emailValidator = new EmailValidator();
             _user = new User(ID_MAIN_USER, "paulosv", "paulosv@mail.com");
         }
 
@@ -89,7 +91,55 @@ namespace UnitTest
             _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
 
             var newDataUser = new User(1, "paulosv", "paulo@mail.com");
-            _service.UpdateEmail(newDataUser);
+            _service.UpdateEmail(newDataUser, _emailValidator);
+
+            Assert.AreEqual(newDataUser.Email, _user.Email);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "System is accepting invalid user")]
+        public void CanUpdateUserEmailWithInvalidId()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+
+            var newDataUser = new User(100, "paulosv", "paulo@mail.com");
+            _service.UpdateEmail(newDataUser, _emailValidator);
+
+            Assert.AreEqual(newDataUser.Email, _user.Email);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException), "System is accepting empty email on update")]
+        public void CanUpdateEmailWithEmailEmpty()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+
+            var newDataUser = new User(1, "paulosv", string.Empty);
+            _service.UpdateEmail(newDataUser, _emailValidator);
+
+            Assert.AreEqual(newDataUser.Email, _user.Email);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentNullException), "System is accepting null email on update")]
+        public void CanUpdateEmailWithNullValue()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+
+            var newDataUser = new User(1, "paulosv", null);
+            _service.UpdateEmail(newDataUser, _emailValidator);
+
+            Assert.AreEqual(newDataUser.Email, _user.Email);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void CanUpdateEmailWithInvalidAddress()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+
+            var newDataUser = new User(1, "paulosv", "pauloATmail.com");
+            _service.UpdateEmail(newDataUser, _emailValidator);
 
             Assert.AreEqual(newDataUser.Email, _user.Email);
         }
