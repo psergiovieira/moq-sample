@@ -1,5 +1,6 @@
 ﻿using Domain.Entities;
 using Domain.Interfaces.Services;
+using Domain.Interfaces.Validators;
 using Infrastructure.Generics;
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
@@ -7,7 +8,7 @@ using Infrastructure.UnitOfWork;
 namespace Domain.Services
 {
     public class UserService : ServiceBase<User>, IUserService
-    {
+    {   
         public UserService(IRepository<User> repository, IUnitOfWork unitOfWork) : base(repository, unitOfWork)
         {
         }
@@ -17,9 +18,9 @@ namespace Domain.Services
             return Repository.GetById(id);
         }
 
-        public bool Create(User user)
+        public bool Create(User user, string password, string confirmPassword, IPasswordValidator passwordValidator)
         {
-            //TODO validations
+            user.CreatePassword(password, confirmPassword, passwordValidator);
             Repository.Create(user);
             return true;
         }
