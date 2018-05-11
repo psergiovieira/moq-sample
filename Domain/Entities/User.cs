@@ -8,7 +8,7 @@ namespace Domain.Entities
     public class User : IIdentity
     {
         public int Id { get; }
-        
+
         /// <summary>
         /// A user name is a name that uniquely identifies the user
         /// </summary>
@@ -16,32 +16,34 @@ namespace Domain.Entities
 
         public string Email { get; set; }
 
-        public string Password { get; private set; }
-
-        private IList<string> _passwordsHistory;
+        public string Password { get; private set; }        
 
         public User(int id, string name, string email)
         {
-            //TODO validate all arguments
             Id = id;
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException();
+
             Name = name;
             Email = email;
-            _passwordsHistory = new List<string>();
         }
 
         internal void CreatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
         {
-            if (!passwordValidator.PasswordIsValid(password, confirmPassword))
-                throw new ArgumentException();
-
+            ValidatePassword(password, confirmPassword, passwordValidator);
             Password = password;
         }
 
-        public void UpdatePassword(string password, string confirmPassword)
-        {
-            //TODO Add Security Rules
-            //TODO verify if the password match with comfirmation of passworld
+        public void UpdatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
+        {            
+            ValidatePassword(password, confirmPassword, passwordValidator);
             Password = password;
-        }              
+        }
+
+        private void ValidatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
+        {
+            if (!passwordValidator.PasswordIsValid(password, confirmPassword))
+                throw new ArgumentException();
+        }
     }
 }

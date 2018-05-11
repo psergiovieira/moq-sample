@@ -6,7 +6,8 @@ namespace Domain.Interfaces.Services
     public interface IUserService
     {
         User GetById(int id);
-        bool Create(User user,string password, string confirmPassword, IPasswordValidator passwordValidator);
+        bool Create(User user, string password, string confirmPassword,
+             IPasswordValidator passwordValidator, IEmailValidator emailValidator);
         User UpdateEmail(User userData, IEmailValidator emailValidator);
         void Delete(int id);
     }

@@ -8,6 +8,8 @@ using Infrastructure.UnitOfWork;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace UnitTest
 {
@@ -21,9 +23,9 @@ namespace UnitTest
         private const int ID_MAIN_USER = 1;
         private IPasswordValidator _passwordValidator;
         private IEmailValidator _emailValidator;
+        private IList<User> _users;
 
-        [TestInitialize]
-        public void Initialize()
+        public UnitTestUser()
         {
             _repository = new Mock<IRepository<User>>();
             _unitOfWork = new Mock<IUnitOfWork>();
@@ -31,6 +33,7 @@ namespace UnitTest
             _passwordValidator = new PasswordValidator();
             _emailValidator = new EmailValidator();
             _user = new User(ID_MAIN_USER, "paulosv", "paulosv@mail.com");
+            _users = new List<User>() { _user };
         }
 
         [TestMethod]
@@ -55,8 +58,58 @@ namespace UnitTest
         [TestMethod]
         public void CanCreateUser()
         {
+            int usersCountBeforeInsert = _users.Count;
+            _repository.Setup(x => x.Create(It.IsAny<User>())).Callback<User>((s) => _users.Add(s));
             var user = new User(1, "fulano", "fulano@mail.com");
-            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator);
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
+
+            Assert.AreEqual(true, userWasCreated);
+            Assert.AreEqual(usersCountBeforeInsert + 1, _users.Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void CanCreateUserWithEmptyName()
+        {
+            int usersCountBeforeInsert = _users.Count;
+            _repository.Setup(x => x.Create(It.IsAny<User>())).Callback<User>((s) => _users.Add(s));
+            var user = new User(1, string.Empty, "fulano@mail.com");
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
+
+            Assert.AreEqual(true, userWasCreated);
+            Assert.AreEqual(usersCountBeforeInsert + 1, _users.Count);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void CanCreateUserWithAlreadyExistingId()
+        {
+            _repository.Setup(x => x.Query(null, null)).Returns(_users.AsQueryable());
+
+            var user = new User(1, "fulano", "fulanomail.com");
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
+
+            Assert.AreEqual(true, userWasCreated);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidOperationException))]
+        public void CanCreateUserWithAlreadyExistingName()
+        {
+            _repository.Setup(x => x.Query(null, null)).Returns(_users.AsQueryable());
+
+            var user = new User(100, "paulosv", "fulanomail.com");
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
+
+            Assert.AreEqual(true, userWasCreated);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void CanCreateUserWithInvalidEmail()
+        {
+            var user = new User(1, "fulano", "fulanomail.com");
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
 
             Assert.AreEqual(true, userWasCreated);
         }
@@ -66,7 +119,7 @@ namespace UnitTest
         public void CanCreateUserWithoutSetPassword()
         {
             var user = new User(1, "fulano", "fulano@mail.com");
-            var userWasCreated = _service.Create(user, string.Empty, string.Empty, _passwordValidator);
+            var userWasCreated = _service.Create(user, string.Empty, string.Empty, _passwordValidator, _emailValidator);
         }
 
         [TestMethod]
@@ -74,7 +127,7 @@ namespace UnitTest
         public void CanCreateUserWithPasswordLengthTooSmall()
         {
             var user = new User(1, "fulano", "fulano@mail.com");
-            var userWasCreated = _service.Create(user, "123", "123", _passwordValidator);
+            var userWasCreated = _service.Create(user, "123", "123", _passwordValidator, _emailValidator);
         }
 
         [TestMethod]
@@ -82,7 +135,7 @@ namespace UnitTest
         public void CanCreateUserWithInvalidConfirmationPassword()
         {
             var user = new User(1, "fulano", "fulano@mail.com");
-            var userWasCreated = _service.Create(user, "12345678", "12245678", _passwordValidator);
+            var userWasCreated = _service.Create(user, "12345678", "12245678", _passwordValidator, _emailValidator);
         }
 
         [TestMethod]
@@ -149,6 +202,14 @@ namespace UnitTest
         {
             _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
             _service.Delete(1);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void CanDeleteUserNonExistent()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+            _service.Delete(10000000);
         }
     }
 }
