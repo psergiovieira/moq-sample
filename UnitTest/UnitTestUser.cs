@@ -75,7 +75,7 @@ namespace UnitTest
             int usersCountBeforeInsert = _users.Count;
             _repository.Setup(x => x.Create(It.IsAny<User>())).Callback<User>((s) => _users.Add(s));
             var user = new User(1, string.Empty, "fulano@mail.com");
-            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);            
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
         }
 
         [TestMethod]
@@ -208,6 +208,18 @@ namespace UnitTest
         {
             _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
             _service.Delete(10000000);
+        }
+
+        [TestMethod]
+        public void CanUpdatePassword()
+        {
+            _repository.Setup(x => x.GetById(ID_MAIN_USER)).Returns(_user);
+            var password = "789456123";
+            var confirmPassword = "789456123";
+            var user = _service.GetById(ID_MAIN_USER);
+
+            user.UpdatePassword(password, confirmPassword, _passwordValidator);
+            Assert.AreEqual(user.Password, password);
         }
     }
 }
