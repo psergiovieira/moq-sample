@@ -65,6 +65,7 @@ namespace UnitTest
 
             Assert.AreEqual(true, userWasCreated);
             Assert.AreEqual(usersCountBeforeInsert + 1, _users.Count);
+            _repository.Verify(m => m.Create(It.IsAny<User>()), Times.Once);
         }
 
         [TestMethod]
@@ -74,10 +75,7 @@ namespace UnitTest
             int usersCountBeforeInsert = _users.Count;
             _repository.Setup(x => x.Create(It.IsAny<User>())).Callback<User>((s) => _users.Add(s));
             var user = new User(1, string.Empty, "fulano@mail.com");
-            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);
-
-            Assert.AreEqual(true, userWasCreated);
-            Assert.AreEqual(usersCountBeforeInsert + 1, _users.Count);
+            var userWasCreated = _service.Create(user, "12345678", "12345678", _passwordValidator, _emailValidator);            
         }
 
         [TestMethod]

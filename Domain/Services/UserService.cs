@@ -29,6 +29,7 @@ namespace Domain.Services
             emailValidator.ValidateEmail(user.Email);
             user.CreatePassword(password, confirmPassword, passwordValidator);
             Repository.Create(user);
+
             return true;
         }
 
