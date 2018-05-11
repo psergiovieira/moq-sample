@@ -2,11 +2,8 @@
 using Infrastructure.Repository;
 using Infrastructure.UnitOfWork;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace Infrastructure.Generics
 {
@@ -33,18 +30,18 @@ namespace Infrastructure.Generics
             catch (WebException wEx)
             {
                 _unitOfWork.Rollback();
-                throw wEx;
+                throw;
             }
             catch (ApplicationException adoex)
             {
                 _unitOfWork.Rollback();
-                throw adoex;
+                throw;
 
             }
             catch (Exception ex)
             {
                 _unitOfWork.Rollback();
-                throw ex;
+                throw;
             }
         }
     }
