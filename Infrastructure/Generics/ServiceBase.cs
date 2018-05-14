@@ -9,7 +9,7 @@ namespace Infrastructure.Generics
 {
     public class ServiceBase<TEntity> where TEntity : IIdentity
     {
-        private IUnitOfWork _unitOfWork;
+        private readonly IUnitOfWork _unitOfWork;
         public IRepository<TEntity> Repository { get; set; }       
 
         public ServiceBase(IRepository<TEntity> repository, IUnitOfWork unitOfWork)
@@ -27,19 +27,8 @@ namespace Infrastructure.Generics
                 metodo();
                 _unitOfWork.Commit();
             }
-            catch (WebException wEx)
-            {
-                _unitOfWork.Rollback();
-                throw;
-            }
-            catch (ApplicationException adoex)
-            {
-                _unitOfWork.Rollback();
-                throw;
-
-            }
-            catch (Exception ex)
-            {
+            catch
+            {           
                 _unitOfWork.Rollback();
                 throw;
             }

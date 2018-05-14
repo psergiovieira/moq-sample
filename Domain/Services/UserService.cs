@@ -54,7 +54,7 @@ namespace Domain.Services
         private void VerifyIfUserIsNull(User user)
         {
             if (user == null)
-                throw new ArgumentException();
+                throw new ArgumentException("User value cannot be null");
         }
 
         public void Delete(int id)

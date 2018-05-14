@@ -16,13 +16,13 @@ namespace Domain.Entities
 
         public string Email { get; set; }
 
-        public string Password { get; private set; }        
+        public string Password { get; private set; }
 
         public User(int id, string name, string email)
         {
             Id = id;
             if (string.IsNullOrEmpty(name))
-                throw new ArgumentException();
+                throw new ArgumentException("Empty Name is not allowed.");
 
             Name = name;
             Email = email;
@@ -30,20 +30,24 @@ namespace Domain.Entities
 
         internal void CreatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
         {
-            ValidatePassword(password, confirmPassword, passwordValidator);
-            Password = password;
+            SetPassword(password, confirmPassword, passwordValidator);
         }
 
         public void UpdatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
-        {            
+        {
+            SetPassword(password, confirmPassword, passwordValidator);
+        }
+
+        private void SetPassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
+        {
             ValidatePassword(password, confirmPassword, passwordValidator);
-            Password = password;
+            Password = password;            
         }
 
         private void ValidatePassword(string password, string confirmPassword, IPasswordValidator passwordValidator)
         {
             if (!passwordValidator.PasswordIsValid(password, confirmPassword))
-                throw new ArgumentException();
+                throw new ArgumentException("Invalid password");
         }
     }
 }

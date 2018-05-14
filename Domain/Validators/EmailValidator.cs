@@ -1,17 +1,24 @@
 ﻿using Domain.Interfaces.Validators;
+using Infrastructure.Regex;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace Domain.Validators
 {
     public class EmailValidator : IEmailValidator
     {
+        static Regex ValidEmailRegex = RegexHelper.CreateValidEmailRegex();
         public void ValidateEmail(string email)
         {
-            var address = new System.Net.Mail.MailAddress(email);
-        }
+            var parameterName = "email";
+            if (email == null)
+                throw new ArgumentNullException(parameterName);
+
+            if (string.Empty == email)
+                throw new ArgumentException(parameterName);
+
+            if (!ValidEmailRegex.IsMatch(email))
+                throw new FormatException(parameterName);
+        }       
     }
 }
